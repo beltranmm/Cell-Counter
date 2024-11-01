@@ -15,7 +15,8 @@ def main():
     imageLoc = "test_image.tif"
 
     # call cell counter
-    cc.countCells(imageLoc)
+    numCells, deadCells = cc.countCells(imageLoc)
+    print("Found ", deadCells, " dead cells out of ", numCells, " total cells")
 
 if __name__ == "__main__":
     main()

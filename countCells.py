@@ -17,7 +17,6 @@ print("Welcome to count cells")
 def countCells(imageLoc):
     # open image
     im_original = Image.open(imageLoc, mode='r')
-    #pix_original = im.load()
 
     # find cells
 
@@ -48,37 +47,41 @@ def countCells(imageLoc):
     # canny "binary" edge-detection
     edges = canny(img_as_ubyte(im))
 
-    # Hough circle identification
-    hough_radii = np.arange(10,30,2)
-    hough_res = hough_circle(edges, hough_radii)
 
-    # display prominent circles
-    # Select the most prominent 3 circles
-    accums, cx, cy, radii = hough_circle_peaks(hough_res, hough_radii, min_xdistance=10, min_ydistance=10, threshold=0.3)
+    # Circle Identification parameters
+    min_radius = 10
+    max_radius = 50
+    circle_quality = 0.3
+
+    # Hough circle identification
+    hough_radii = np.arange(min_radius,max_radius,1)
+    hough_res = hough_circle(edges, hough_radii)
+    accums, cx, cy, radii = hough_circle_peaks(hough_res, hough_radii, min_xdistance=max_radius, min_ydistance=max_radius, threshold=circle_quality)
 
 
     # remove overlapping circles
     no_overlapping = False
     while no_overlapping == False:
         no_overlapping = True
-        overlap_ind = 0
+        overlap_ind = []
         for i in range(len(radii)-1):
             for j in range(i+1,len(radii)):
                 if pow(cx[i]-cx[j],2) + pow(cy[i]-cy[j],2) < pow(radii[i]+radii[j],2):
-                    # exit loops
-                    overlap_ind = j
+                    # track indices to remove
+                    overlap_ind = np.append(overlap_ind,j)
                     no_overlapping = False
-                    break
+                    
             if no_overlapping == False:
+                #remove circle j
+                ind = overlap_ind.astype(int)
+                accums = np.delete(accums,ind)
+                cx = np.delete(cx,ind)
+                cy = np.delete(cy,ind)
+                radii = np.delete(radii,ind)
+                print(len(radii))
                 break
 
 
-        #remove circle j
-        accums = np.delete(accums,overlap_ind)
-        cx = np.delete(cx,overlap_ind)
-        cy = np.delete(cy,overlap_ind)
-        radii = np.delete(radii,overlap_ind)
-        print(len(radii))
 
     # Draw them
     fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(10, 4))
@@ -90,9 +93,37 @@ def countCells(imageLoc):
     ax.imshow(image, cmap=plt.cm.gray)
     plt.show()
 
+
+    # Count Dead cells
+
+    # subtract GB channels from R
+    im = im_original
+    for i in range(im.size[0]):
+        for j in range(im.size[1]):
+            pixDiff = im.getpixel((i,j))[0] - np.max(im.getpixel((i,j))[1:2])
+            if pixDiff < 0:
+                im.putpixel((i,j),(0,0,0))
+            else:
+                im.putpixel((i,j),(pixDiff,0,0))
+
+
+    im = im.filter(ImageFilter.MaxFilter(3))
+    im = im.filter(ImageFilter.GaussianBlur(3))
+
+
     # save modified image for testing
     im.save("editted_image.tif")
 
-    cellInfo = "empty"
+    #pix = im_original.load()
+    avgRed = np.mean(list(im.getdata(0)))
+    red_cell_count = 0
+    for i in range(len(cx)):
+        if im.getpixel([cx[i],cy[i]])[0] > avgRed:
+            red_cell_count+= 1
+
+
+
+    # return number of cells
+    cellInfo = (len(radii), red_cell_count)
 
     return cellInfo
