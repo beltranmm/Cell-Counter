@@ -124,6 +124,11 @@ def countCells(imageLoc):
 
 
     # return number of cells
-    cellInfo = (len(radii), red_cell_count)
+    #cellInfo = (len(radii), red_cell_count)
+    cellInfo = "done"
 
     return cellInfo
+
+def testCount(imageLoc):
+
+    return "testing"

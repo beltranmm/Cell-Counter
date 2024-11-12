@@ -3,8 +3,8 @@
 
 
 
-import countCells as cc
-#import cellCounterGUI
+#import countCells as cc
+import cellCounterGUI
 
 
 def main():
@@ -15,8 +15,8 @@ def main():
     imageLoc = "test_image.tif"
 
     # call cell counter
-    numCells, deadCells = cc.countCells(imageLoc)
-    print("Found ", deadCells, " dead cells out of ", numCells, " total cells")
+    #numCells, deadCells = cc.countCells(imageLoc)
+    #print("Found ", deadCells, " dead cells out of ", numCells, " total cells")
 
 if __name__ == "__main__":
     main()
