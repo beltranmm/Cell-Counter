@@ -34,7 +34,8 @@ class CellCounterGUI:
         root.rowconfigure(0, weight=1)
        
 
-        self.fileLocation = "test_image.tif"
+        #self.fileLocation = "test_image.tif"
+        self.fileLocation = StringVar()
         file_entry = ttk.Entry(mainframe, width=15, textvariable=self.fileLocation)
         file_entry.grid(column=2, row=1, sticky=(W, E))
         self.numCells = StringVar()
@@ -61,26 +62,32 @@ class CellCounterGUI:
         root.bind("<Return>", self.countCells)
 
     def countCells(self, *args):
-        # open image
-        im = Image.open(self.fileLocation, mode='r')
 
-        # track progress
-        print("counting cells")
-        self.progress+=1
+        #try:
+            # open image
+            im = Image.open(self.fileLocation.get(), mode='r')
 
-        cx, cy = self.findCells(im)
+            # track progress
+            print("counting cells")
+            self.progress+=1
 
-        print("countCells - counting dead cells")
-        self.progress+=1
+            cx, cy = self.findCells(im)
 
-        ld = self.liveOrDead(im, cx, cy)
+            print("countCells - counting dead cells")
+            self.progress+=1
 
-        # return number of cells
-        self.numCells.set(len(cx))
-        self.deadCells.set(red_cell_count)
-        self.liveCells.set(len(radii) - red_cell_count)
+            live = self.isLive(im, cx, cy)
 
-    def findCells(im_original):
+            # return number of cells
+            self.numCells.set(len(cx))
+            self.deadCells.set(len(cx) - np.sum(live))
+            self.liveCells.set(np.sum(live))
+            
+        #except AttributeError:
+        #except ValueError:
+        #    print("File not found")
+
+    def findCells(self, im_original):
 
         # convert to greyscale
         im = im_original.convert("L")
@@ -122,14 +129,26 @@ class CellCounterGUI:
                     print(len(radii))
                     break
 
+        # Draw them
+        fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(10, 4))
+        image = color.gray2rgb(img_as_ubyte(im))
+        for center_y, center_x, radius in zip(cy, cx, radii):
+            circy, circx = circle_perimeter(center_y, center_x, radius, shape=image.shape)
+            image[circy, circx] = (220, 20, 20)
+
+        ax.imshow(image, cmap=plt.cm.gray)
+        plt.show()
+
+
         # return number of cells
         cellInfo = (cx, cy)
 
         return cellInfo
 
-    def liveOrDead(im, cx, cy):
+    def isLive(self, im, cx, cy):
         
-        # Count Dead cells
+        # assume cells are alive
+        live = [1] * cx.size
 
         
         # subtract GB channels from R
@@ -145,16 +164,32 @@ class CellCounterGUI:
         im = im.filter(ImageFilter.MaxFilter(3))
         im = im.filter(ImageFilter.GaussianBlur(3))
 
-        avgRed = np.mean(list(im.getdata(0)))
-        red_cell_count = 0
+        avgRed = np.max((20,np.mean(list(im.getdata(0)))))
         for i in range(len(cx)):
+            # check if cell is red/dead
             if im.getpixel([cx[i],cy[i]])[0] > avgRed:
-                red_cell_count+= 1
+                live[i] = 0
 
+        # Draw them
+        fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(10, 4))
+        # convert to greyscale
+        im = im.convert("L")
+        image = color.gray2rgb(img_as_ubyte(im))
+        # set radii
+        radii = [10] * cx.size
+        i = 0
+        for center_y, center_x, radius in zip(cy, cx, radii):
+            circy, circx = circle_perimeter(center_y, center_x, radius, shape=image.shape)
+            if live[i] == 0:
+                image[circy, circx] = (20, 20, 220)
+            else:
+                image[circy, circx] = (20, 220, 20)
 
+        ax.imshow(image, cmap=plt.cm.gray)
+        plt.show()
 
         # return number of cells
-        
+        return live
         
 
 root = Tk()
