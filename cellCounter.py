@@ -20,7 +20,7 @@ from skimage.util import img_as_ubyte
 print("cell counter GUI")
 
 
-class CellCounterGUI:
+class CellCounter:
 
     def __init__(self, root):
 
@@ -193,5 +193,5 @@ class CellCounterGUI:
         
 
 root = Tk()
-CellCounterGUI(root)
+CellCounter(root)
 root.mainloop()
