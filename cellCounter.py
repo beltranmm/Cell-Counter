@@ -4,7 +4,6 @@
 from tkinter import *
 from tkinter import ttk
 
-#import countCells as cc
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -17,24 +16,16 @@ from skimage.draw import circle_perimeter
 from skimage.util import img_as_ubyte
 
 
-print("cell counter GUI")
-
-
 class CellCounter:
 
     def __init__(self, root):
 
-        print("init")
-
         root.title("Cell Counter")
-
         mainframe = ttk.Frame(root, padding="3 3 12 12")
         mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
         root.columnconfigure(0, weight=1)
         root.rowconfigure(0, weight=1)
        
-
-        #self.fileLocation = "test_image.tif"
         self.fileLocation = StringVar()
         file_entry = ttk.Entry(mainframe, width=15, textvariable=self.fileLocation)
         file_entry.grid(column=2, row=1, sticky=(W, E))
@@ -52,8 +43,9 @@ class CellCounter:
         ttk.Label(mainframe, text="Dead Cells").grid(column=2, row=2, sticky=W)
         ttk.Label(mainframe, text="Total Cells").grid(column=3, row=2, sticky=W)
 
-        self.progress = 0
-        ttk.Progressbar(mainframe, orient='horizontal', variable=self.progress, maximum=3).grid(column=1, row=4, sticky=W)
+        self.progBar = ttk.Progressbar(mainframe, orient='horizontal')
+        self.progBar.grid(column=1, row=4, sticky=W)
+        self.progBar['value'] = 0
 
         for child in mainframe.winfo_children(): 
             child.grid_configure(padx=5, pady=5)
@@ -65,31 +57,26 @@ class CellCounter:
 
         #try:
             # open image
-            im = Image.open(self.fileLocation.get(), mode='r')
+            self.im_original = Image.open(self.fileLocation.get(), mode='r')
 
             # track progress
             print("counting cells")
-            self.progress+=1
+            self.progBar['value'] = 20
+            root.update()
 
-            cx, cy = self.findCells(im)
+            global interrupt; interrupt = False
+            root.after(1, self.findCells)
 
-            print("countCells - counting dead cells")
-            self.progress+=1
-
-            live = self.isLive(im, cx, cy)
-
-            # return number of cells
-            self.numCells.set(len(cx))
-            self.deadCells.set(len(cx) - np.sum(live))
-            self.liveCells.set(np.sum(live))
+            
             
         #except AttributeError:
         #except ValueError:
         #    print("File not found")
 
-    def findCells(self, im_original):
+    def findCells(self, *args):
 
         # convert to greyscale
+        im_original = self.im_original
         im = im_original.convert("L")
         # blur to reduce background noise
         im = im.filter(ImageFilter.BoxBlur(1))
@@ -141,12 +128,22 @@ class CellCounter:
 
 
         # return number of cells
-        cellInfo = (cx, cy)
+        self.cellInfo = (cx, cy)
 
-        return cellInfo
+        # update progress bar
+        self.progBar['value'] = 50
+        root.update()
 
-    def isLive(self, im, cx, cy):
+        # call next step
+        root.after(1, self.isLive)
+
+    def isLive(self, *args):
         
+        # assign inputs
+        cx = self.cellInfo[0]
+        cy = self.cellInfo[1]
+        im = self.im_original
+
         # assume cells are alive
         live = [1] * cx.size
 
@@ -189,8 +186,24 @@ class CellCounter:
         plt.show()
 
         # return number of cells
-        return live
+        self.live = live
+
+        # update progress bar
+        self.progBar['value'] = 80
+        root.update()
+
+        # call next step
+        root.after(1, self.report)
         
+    def report(self, *args):
+        # return number of cells
+        self.numCells.set(len(self.cellInfo[0]))
+        self.deadCells.set(len(self.cellInfo[0]) - np.sum(self.live))
+        self.liveCells.set(np.sum(self.live))
+
+        # update progress bar
+        self.progBar['value'] = 100
+        root.update()
 
 root = Tk()
 CellCounter(root)
