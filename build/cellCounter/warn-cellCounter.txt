@@ -16,7 +16,7 @@ IMPORTANT: Do NOT post this list to the issue-tracker. Use it as a basis for
 
 missing module named grp - imported by shutil (delayed, optional), tarfile (optional), pathlib (delayed, optional), subprocess (delayed, conditional, optional), setuptools._vendor.backports.tarfile (optional), setuptools._distutils.archive_util (optional)
 missing module named pwd - imported by posixpath (delayed, conditional, optional), shutil (delayed, optional), tarfile (optional), pathlib (delayed, optional), subprocess (delayed, conditional, optional), http.server (delayed, optional), netrc (delayed, conditional), getpass (delayed), setuptools._distutils.util (delayed, conditional, optional), setuptools._vendor.backports.tarfile (optional), setuptools._distutils.archive_util (optional)
-missing module named posix - imported by posixpath (optional), shutil (conditional), importlib._bootstrap_external (conditional), os (conditional, optional)
+missing module named posix - imported by os (conditional, optional), posixpath (optional), shutil (conditional), importlib._bootstrap_external (conditional)
 missing module named resource - imported by posix (top-level)
 missing module named _frozen_importlib_external - imported by importlib._bootstrap (delayed), importlib (optional), importlib.abc (optional), zipimport (top-level)
 excluded module named _frozen_importlib - imported by importlib (optional), importlib.abc (optional), zipimport (top-level)
@@ -236,6 +236,7 @@ missing module named skimage.color.rgba2rgb - imported by skimage.color (delayed
 missing module named skimage.color.rgb2gray - imported by skimage.color (delayed, conditional), skimage.exposure.exposure (delayed, conditional), skimage.measure._blur_effect (top-level)
 missing module named skimage.exposure.is_low_contrast - imported by skimage.exposure (top-level), skimage.io._io (top-level), skimage.io._plugins.matplotlib_plugin (top-level)
 missing module named numpydoc - imported by skimage._shared.utils (delayed, optional)
+missing module named skimage.draw.disk - imported by skimage.draw (top-level), C:\Users\Matthew\Documents\GitHub\Cell-Counter\cellCounter.py (top-level)
 missing module named skimage.draw.circle_perimeter - imported by skimage.draw (top-level), C:\Users\Matthew\Documents\GitHub\Cell-Counter\cellCounter.py (top-level)
 missing module named skimage.draw.rectangle - imported by skimage.draw (top-level), skimage.feature.haar (top-level)
 missing module named scipy.special.ellipeinc - imported by scipy.special (top-level), skimage.draw.draw3d (top-level)
