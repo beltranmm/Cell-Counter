@@ -3,3 +3,4 @@ editted_image.tif
 test_image_2.tif
 *.pyc
 *.tif
+build/
